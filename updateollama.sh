@@ -44,18 +44,22 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 1
 fi
 
-# Controlla se Environment="OLLAMA_HOST=0.0.0.0" è già presente nel file
-if grep -q "Environment=\"OLLAMA_HOST=0.0.0.0\"" "$CONFIG_FILE"; then
-    echo "Environment='OLLAMA_HOST=0.0.0.0' è già presente nel file di configurazione."
-else
-    # Aggiungi o modifica la riga Environment
-    sudo sed -i '/^\[Service\]/a Environment="OLLAMA_HOST=0.0.0.0"' "$CONFIG_FILE"
-    if [ $? -ne 0 ]; then
-        echo "Errore: Impossibile modificare il file di configurazione."
-        exit 1
-    else
-        echo "Configurazione aggiornata con successo."
-    fi
+# 5.1 Abilita accesso da tutte le interfacce [[1]][[6]]
+if ! grep -q "OLLAMA_HOST=0.0.0.0" "$CONFIG_FILE"; then
+    sudo sed -i '/\[Service\]/a Environment="OLLAMA_HOST=0.0.0.0"' "$CONFIG_FILE"
+    echo "Aggiunto: OLLAMA_HOST=0.0.0.0"
+fi
+
+# 5.2 Abilita memoria unificata CUDA per gestire grandi modelli [[2]][[6]]
+if ! grep -q "GGML_CUDA_ENABLE_UNIFIED_MEMORY" "$CONFIG_FILE"; then
+    sudo sed -i '/\[Service\]/a Environment="GGML_CUDA_ENABLE_UNIFIED_MEMORY=1"' "$CONFIG_FILE"
+    echo "Aggiunto: GGML_CUDA_ENABLE_UNIFIED_MEMORY=1"
+fi
+
+# 5.3 Rimuove i limiti di memoria per lo swap [[3]][[7]]
+if ! grep -q "LimitMEMLOCK=infinity" "$CONFIG_FILE"; then
+    sudo sed -i '/\[Service\]/a LimitMEMLOCK=infinity' "$CONFIG_FILE"
+    echo "Aggiunto: LimitMEMLOCK=infinity"
 fi
 
 # 6. Riavvia il servizio ollama
