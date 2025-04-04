@@ -1,3 +1,10 @@
+# ⚠️ IMPORTANT WARNING ⚠️
+**THESE SCRIPTS MAKE SYSTEM-LEVEL CHANGES. USE AT YOUR OWN RISK!**
+- These scripts modify Ollama service configuration and model files
+- Always back up important data before running
+- Only use if you understand what these scripts do
+- The authors are not responsible for any issues caused by these scripts
+
 # Ollama Update and Configuration Scripts
 
 This repository contains scripts to manage Ollama updates and model configurations.
