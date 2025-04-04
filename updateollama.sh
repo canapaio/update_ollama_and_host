@@ -86,3 +86,17 @@ else
 fi
 
 echo "Procedura di aggiornamento e configurazione completata con successo!"
+
+# 8. Aggiornamento automatico dei modelli da Hugging Face
+echo "Aggiornamento dei modelli da Hugging Face (hf.co/)..."
+for model in $(ollama list | awk '{print $1}' | grep "hf.co/"); do
+    echo "Download dell'ultima versione di $model..."
+    ollama pull $model
+    if [ $? -ne 0 ]; then
+        echo "Attenzione: Impossibile aggiornare il modello $model"
+    else
+        echo "Modello $model aggiornato con successo"
+    fi
+done
+
+echo "Tutti gli aggiornamenti completati!"
