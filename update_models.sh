@@ -1,47 +1,48 @@
 #!/bin/bash
 
-# Script per aggiornare tutti i modelli Ollama
-
-echo "Avvio aggiornamento di tutti i modelli..."
-
-# 1. Aggiornamento automatico di tutti i modelli
-echo "Ricerca modelli installati..."
+echo "Starting update of all models..."
+echo "Searching for installed models..."
 MODEL_COUNT=0
 UPDATED_COUNT=0
 
 for model in $(ollama list | awk '{print $1}' | grep -v "NAME"); do
     echo "----------------------------------------"
-    echo "Download ultima versione di: $model"
+    echo "Checking model: $model"
     ((MODEL_COUNT++))
     
-    # Verifica se il modello è locale
-    if ollama show $model >/dev/null 2>&1; then
-        if ollama show $model | grep -q "local model"; then
-            echo "[INFO] Modello locale - saltato: $model"
+    # First check: model exists locally
+    if ollama list | grep -q "^$model "; then
+        # Second check: is it a local model?
+        if ollama show "$model" 2>&1 | grep -q "local model"; then
+            echo "[INFO] Local model - skipped: $model"
             ((UPDATED_COUNT++))
             continue
         fi
-    fi
-    
-    ollama pull $model
-    if [ $? -ne 0 ]; then
-        echo "[WARNING] Impossibile verificare aggiornamenti per: $model (potrebbe essere un modello locale)"
-        ((UPDATED_COUNT++))  # Consideriamo comunque come "aggiornato"
+        
+        # Attempt update
+        echo "Downloading latest version of: $model"
+        if ollama pull "$model"; then
+            echo "[SUCCESS] Model updated: $model"
+            ((UPDATED_COUNT++))
+        else
+            echo "[WARNING] Update failed for: $model"
+            ((UPDATED_COUNT++))
+        fi
     else
-        echo "[SUCCESSO] Modello aggiornato: $model"
+        echo "[WARNING] Model not found - skipped: $model"
         ((UPDATED_COUNT++))
     fi
 done
 
 echo "----------------------------------------"
-echo "Riepilogo aggiornamento:"
-echo "Modelli trovati: $MODEL_COUNT"
-echo "Modelli aggiornati: $UPDATED_COUNT"
+echo "Update summary:"
+echo "Models found: $MODEL_COUNT"
+echo "Models updated: $UPDATED_COUNT"
 
 if [ $MODEL_COUNT -eq 0 ]; then
-    echo "Nessun modello trovato."
+    echo "No models found."
 elif [ $UPDATED_COUNT -lt $MODEL_COUNT ]; then
-    echo "Attenzione: alcuni modelli non sono stati aggiornati."
+    echo "Warning: some models were not updated."
 else
-    echo "Tutti i modelli sono stati aggiornati con successo!"
+    echo "All models were successfully updated!"
 fi

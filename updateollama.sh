@@ -1,102 +1,89 @@
 #!/bin/bash
 
-# Script per aggiornare Ollama e configurarlo
+# Script to update and configure Ollama
 
-# 1. Definizione del percorso del backup dinamico basato sullo script corrente
+# 1. Define dynamic backup path based on current script location
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 BACKUP_DIR="$SCRIPT_DIR/backup_ollama_service"
 
-# 2. Crea la sottocartella di backup se non esiste
+# 2. Create backup subfolder if it doesn't exist
 if [ ! -d "$BACKUP_DIR" ]; then
     mkdir -p "$BACKUP_DIR"
     if [ $? -ne 0 ]; then
-        echo "Errore: Impossibile creare la cartella di backup."
+        echo "Error: Unable to create backup folder."
         exit 1
     fi
 fi
 
-# 3. Backup della configurazione del servizio ollama con data/ora inclusa nel nome del file
-echo "Backup della configurazione del servizio ollama..."
+# 3. Backup ollama service configuration with timestamp in filename
+echo "Backing up ollama service configuration..."
 FILE_NAME="ollama.service.$(date +'%Y%m%d_%H%M%S').bak"
 sudo cp /etc/systemd/system/ollama.service "$BACKUP_DIR/$FILE_NAME"
 if [ $? -ne 0 ]; then
-    echo "Errore: Impossibile effettuare il backup del file di configurazione."
+    echo "Error: Unable to backup configuration file."
     exit 1
 else
-    echo "Backup completato: $BACKUP_DIR/$FILE_NAME"
+    echo "Backup completed: $BACKUP_DIR/$FILE_NAME"
 fi
 
-# 4. Scarica l'aggiornamento di Ollama tramite curl e eseguilo
-echo "Aggiornamento di Ollama in corso..."
+# 4. Download and execute Ollama update via curl
+echo "Updating Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 if [ $? -ne 0 ]; then
-    echo "Errore: Impossibile aggiornare Ollama."
+    echo "Error: Unable to update Ollama."
     exit 1
 fi
 
-# 5. Modifica il file di configurazione del servizio ollama
-echo "Modifica del file di configurazione per impostare l'indirizzo host su 0.0.0.0..."
+# 5. Modify ollama service configuration file
+echo "Modifying configuration file to set host address to 0.0.0.0..."
 CONFIG_FILE="/etc/systemd/system/ollama.service"
 
-# Controlla se il file esiste
+# Check if file exists
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Errore: Il file $CONFIG_FILE non esiste."
+    echo "Error: File $CONFIG_FILE does not exist."
     exit 1
 fi
 
-# 5.1 Abilita accesso da tutte le interfacce [[1]][[6]]
+# 5.1 Enable access from all interfaces
 if ! grep -q "OLLAMA_HOST=0.0.0.0" "$CONFIG_FILE"; then
     sudo sed -i '/\[Service\]/a Environment="OLLAMA_HOST=0.0.0.0"' "$CONFIG_FILE"
-    echo "Aggiunto: OLLAMA_HOST=0.0.0.0"
+    echo "Added: OLLAMA_HOST=0.0.0.0"
 fi
 
-# 5.2 Abilita memoria unificata CUDA per gestire grandi modelli [[2]][[6]]
+# 5.2 Enable CUDA unified memory for large models
 if ! grep -q "GGML_CUDA_ENABLE_UNIFIED_MEMORY" "$CONFIG_FILE"; then
     sudo sed -i '/\[Service\]/a Environment="GGML_CUDA_ENABLE_UNIFIED_MEMORY=1"' "$CONFIG_FILE"
-    echo "Aggiunto: GGML_CUDA_ENABLE_UNIFIED_MEMORY=1"
+    echo "Added: GGML_CUDA_ENABLE_UNIFIED_MEMORY=1"
 fi
 
-# 5.3 Rimuove i limiti di memoria per lo swap [[3]][[7]]
+# 5.3 Remove memory limits for swap
 if ! grep -q "LimitMEMLOCK=infinity" "$CONFIG_FILE"; then
     sudo sed -i '/\[Service\]/a LimitMEMLOCK=infinity' "$CONFIG_FILE"
-    echo "Aggiunto: LimitMEMLOCK=infinity"
+    echo "Added: LimitMEMLOCK=infinity"
 fi
 
-# 6. Riavvia il servizio ollama
-echo "Riavvio del servizio ollama..."
+# 6. Restart ollama service
+echo "Restarting ollama service..."
 sudo systemctl daemon-reload
 if [ $? -ne 0 ]; then
-    echo "Errore: Impossibile ricaricare i demoni di systemd."
+    echo "Error: Unable to reload systemd daemons."
     exit 1
 fi
 
 sudo systemctl restart ollama
 if [ $? -ne 0 ]; then
-    echo "Errore: Impossibile riavviare il servizio ollama."
+    echo "Error: Unable to restart ollama service."
     exit 1
 fi
 
-# 7. Verifica dello stato del servizio
-echo "Verifica dello stato del servizio ollama..."
+# 7. Verify service status
+echo "Checking ollama service status..."
 sudo systemctl status ollama --no-pager
 if [ $? -ne 0 ]; then
-    echo "Attenzione: Lo stato del servizio ollama non è attivo."
+    echo "Warning: Ollama service status is not active."
 else
-    echo "Servizio ollama avviato correttamente."
+    echo "Ollama service started successfully."
 fi
 
-echo "Procedura di aggiornamento e configurazione completata con successo!"
+echo "Update and configuration procedure completed successfully!"
 
-# 8. Aggiornamento automatico dei modelli da Hugging Face
-echo "Aggiornamento dei modelli da Hugging Face (hf.co/)..."
-for model in $(ollama list | awk '{print $1}' | grep "hf.co/"); do
-    echo "Download dell'ultima versione di $model..."
-    ollama pull $model
-    if [ $? -ne 0 ]; then
-        echo "Attenzione: Impossibile aggiornare il modello $model"
-    else
-        echo "Modello $model aggiornato con successo"
-    fi
-done
-
-echo "Tutti gli aggiornamenti completati!"

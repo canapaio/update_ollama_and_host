@@ -1,37 +1,37 @@
 #!/bin/bash
 
-# Script per aggiornare solo i modelli Ollama da Hugging Face
+# Script to update only Hugging Face Ollama models
 
-echo "Avvio aggiornamento modelli da Hugging Face..."
+echo "Starting Hugging Face models update..."
 
-# 1. Aggiornamento automatico dei modelli da Hugging Face
-echo "Ricerca modelli hf.co/ installati..."
+# 1. Automatic update of Hugging Face models
+echo "Searching for installed hf.co/ models..."
 MODEL_COUNT=0
 UPDATED_COUNT=0
 
 for model in $(ollama list | awk '{print $1}' | grep "hf.co/"); do
     echo "----------------------------------------"
-    echo "Download ultima versione di: $model"
+    echo "Downloading latest version of: $model"
     ((MODEL_COUNT++))
     
     ollama pull $model
     if [ $? -ne 0 ]; then
-        echo "[ERRORE] Aggiornamento fallito per: $model"
+        echo "[ERROR] Update failed for: $model"
     else
-        echo "[SUCCESSO] Modello aggiornato: $model"
+        echo "[SUCCESS] Model updated: $model"
         ((UPDATED_COUNT++))
     fi
 done
 
 echo "----------------------------------------"
-echo "Riepilogo aggiornamento:"
-echo "Modelli trovati: $MODEL_COUNT"
-echo "Modelli aggiornati: $UPDATED_COUNT"
+echo "Update summary:"
+echo "Models found: $MODEL_COUNT"
+echo "Models updated: $UPDATED_COUNT"
 
 if [ $MODEL_COUNT -eq 0 ]; then
-    echo "Nessun modello hf.co/ trovato."
+    echo "No hf.co/ models found."
 elif [ $UPDATED_COUNT -lt $MODEL_COUNT ]; then
-    echo "Attenzione: alcuni modelli non sono stati aggiornati."
+    echo "Warning: some models were not updated."
 else
-    echo "Tutti i modelli sono stati aggiornati con successo!"
+    echo "All models were successfully updated!"
 fi
