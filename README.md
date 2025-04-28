@@ -1,6 +1,6 @@
 # ⚠️ IMPORTANT WARNING ⚠️
 **THESE SCRIPTS MAKE SYSTEM-LEVEL CHANGES. USE AT YOUR OWN RISK!**
-- These scripts modify Ollama service configuration and model files in UBUNTU 22.04
+- These scripts modify Ollama service configuration and model files in *UBUNTU 22.04*
 - Always back up important data before running
 - Only use if you understand what these scripts do
 - The authors are not responsible for any issues caused by these scripts
