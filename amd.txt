@@ -1,0 +1,8 @@
+Environment="HSA_OVERRIDE_GFX_VERSION=11.5.1"
+Environment="OLLAMA_FLASH_ATTENTION=1"
+# Environment="OLLAMA_CONTEXT_LENGTH=32768"
+Environment="OLLAMA_HOST=0.0.0.0"
+Environment="OLLAMA_NUM_PARALLEL=1"
+Environment="ROCM_PATH=/opt/rocm"
+Environment="LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/llvm/lib:$LD_LIBRARY_PATH"
+Environment="HIP_VISIBLE_DEVICES=0"
