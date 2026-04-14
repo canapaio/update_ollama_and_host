@@ -49,14 +49,9 @@ if [ ! -f "$AMD_FILE" ]; then
     exit 1
 fi
 
-if ! grep -q "\[Server\]" "$CONFIG_FILE"; then
-    sudo sed -i '/\[Service\]/a [Server]' "$CONFIG_FILE"
-    echo "Added: [Server]"
-fi
-
 while IFS= read -r line; do
     if [ -n "$line" ] && ! grep -qF "$line" "$CONFIG_FILE"; then
-        sudo sed -i '/\[Server\]/a '"$line"'' "$CONFIG_FILE"
+        sudo sed -i '/\[Service\]/a '"$line"'' "$CONFIG_FILE"
         echo "Added: $line"
     fi
 done < "$AMD_FILE"
@@ -100,7 +95,7 @@ if [ -n "$1" ]; then
     echo "Appending custom file: $1"
     while IFS= read -r line; do
         if [ -n "$line" ] && ! grep -qF "$line" "$CONFIG_FILE"; then
-            sudo sed -i '/\[Server\]/a '"$line"'' "$CONFIG_FILE"
+            sudo sed -i '/\[Service\]/a '"$line"'' "$CONFIG_FILE"
             echo "Added: $line"
         fi
     done < "$1"

@@ -29,7 +29,32 @@ This repository contains scripts to manage Ollama updates and model configuratio
   ./updateollama.sh
   ```
 
-### 2. update_models.sh
+### 2. updatefile.sh
+- **Purpose**: Like `updateollama.sh` but with customizable `[Server]` section
+- **Features**:
+  - Creates backup of current configuration
+  - Downloads and installs latest Ollama version
+  - Adds a `[Server]` section populated with `amd.txt` content:
+    ```ini
+    [Service]
+    [Server]
+    Environment="HSA_OVERRIDE_GFX_VERSION=11.5.1"
+    Environment="OLLAMA_FLASH_ATTENTION=1"
+    Environment="OLLAMA_HOST=0.0.0.0"
+    Environment="OLLAMA_NUM_PARALLEL=1"
+    Environment="ROCM_PATH=/opt/rocm"
+    Environment="LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/llvm/lib:$LD_LIBRARY_PATH"
+    Environment="HIP_VISIBLE_DEVICES=0"
+    ```
+  - Accepts a custom `.txt` file as argument to append additional settings
+  - Restarts the Ollama service
+- **Usage**:
+  ```bash
+  ./updatefile.sh              # uses default amd.txt
+  ./updatefile.sh custom.txt   # appends custom.txt content
+  ```
+
+### 3. update_models.sh
 - **Purpose**: Updates all installed Ollama models
 - **Features**:
   - Automatically detects all installed models
@@ -41,7 +66,7 @@ This repository contains scripts to manage Ollama updates and model configuratio
   ./update_models.sh
   ```
 
-### 3. hf_update_models.sh
+### 4. hf_update_models.sh
 - **Purpose**: Updates only Hugging Face models (hf.co/)
 - **Features**:
   - Specifically targets Hugging Face hosted models
@@ -54,7 +79,7 @@ This repository contains scripts to manage Ollama updates and model configuratio
   ```
 
 ## Recommended Workflow
-1. First run `updateollama.sh` to update the core service
+1. First run `updateollama.sh` or `updatefile.sh` to update the core service
 2. Then run either:
    - `update_models.sh` to update all models
    - `hf_update_models.sh` to update only Hugging Face models
