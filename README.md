@@ -30,14 +30,13 @@ This repository contains scripts to manage Ollama updates and model configuratio
   ```
 
 ### 2. updatefile.sh
-- **Purpose**: Like `updateollama.sh` but with customizable `[Server]` section
+- **Purpose**: Like `updateollama.sh` but with customizable AMD/GPU configuration from file
 - **Features**:
   - Creates backup of current configuration
   - Downloads and installs latest Ollama version
-  - Adds a `[Server]` section populated with `amd.txt` content:
+  - Adds environment variables from `amd.txt` directly under `[Service]`:
     ```ini
     [Service]
-    [Server]
     Environment="HSA_OVERRIDE_GFX_VERSION=11.5.1"
     Environment="OLLAMA_FLASH_ATTENTION=1"
     Environment="OLLAMA_HOST=0.0.0.0"
